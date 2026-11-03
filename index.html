@@ -67,22 +67,35 @@ body.auth-mode #authGate{display:grid!important}
 
 <style id="rumaTransitionStyles">
 @keyframes loginCardIn{0%{opacity:0;transform:translateY(22px) scale(.97)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes pageReveal{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes pageReveal{0%{opacity:0;transform:translateY(20px) scale(.992);filter:blur(3px)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
 @keyframes spinnerTurn{to{transform:rotate(360deg)}}
+@keyframes progressLoad{0%{width:0}100%{width:100%}}
+@keyframes orbitFloat{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(18px,-20px,0) scale(1.06)}}
+@keyframes cardEnter{0%{opacity:0;transform:translateY(25px) scale(.97)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes brandGlow{0%,100%{text-shadow:0 0 0 #ffffff00}50%{text-shadow:0 0 28px #ffffff66}}
 .auth-card{animation:loginCardIn .55s cubic-bezier(.2,.75,.25,1) both}
-.auth-gate.auth-leaving .auth-card{opacity:0;transform:translateY(-12px) scale(.98);transition:opacity .25s ease,transform .25s ease}
-.ruma-transition{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;background:linear-gradient(135deg,#123f9c,#092967);color:white;opacity:0;visibility:hidden;transition:opacity .28s ease,visibility .28s ease}
+.auth-gate.auth-leaving .auth-card{opacity:0;transform:translateY(-12px) scale(.98);transition:opacity .28s ease,transform .28s ease}
+.ruma-transition{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;overflow:hidden;padding:24px;background:radial-gradient(circle at 18% 18%,#315db0 0,transparent 32%),radial-gradient(circle at 82% 78%,#1c4c9f 0,transparent 34%),linear-gradient(135deg,#0b2866,#123f9c 52%,#081f53);color:white;opacity:0;visibility:hidden;transition:opacity .42s ease,visibility .42s ease}
 .ruma-transition.active{opacity:1;visibility:visible}
 .ruma-transition.fade-out{opacity:0}
-.transition-content{text-align:center;padding:25px;transform:translateY(12px);transition:transform .4s ease}
-.ruma-transition.active .transition-content{transform:translateY(0)}
-.transition-mark{font-size:64px;line-height:1;font-weight:900;letter-spacing:-5px;margin-bottom:28px}
-.transition-mark span{color:#ffda45}
-.transition-spinner{width:34px;height:34px;border:3px solid #ffffff55;border-top-color:#ffda45;border-radius:50%;margin:0 auto 24px;animation:spinnerTurn .8s linear infinite}
-.transition-content h2{font-size:clamp(22px,4vw,32px);margin:0 0 10px;letter-spacing:-.5px}
-.transition-content p{font-size:13px;color:#dce6ff;margin:0}
-.dashboard-enter{animation:pageReveal .55s cubic-bezier(.2,.75,.25,1) both}
-@media(prefers-reduced-motion:reduce){.auth-card,.dashboard-enter,.transition-spinner{animation:none!important}.ruma-transition,.transition-content,.auth-gate.auth-leaving .auth-card{transition:none!important}}
+.transition-orbit{position:absolute;border:1px solid #ffffff20;border-radius:50%;pointer-events:none;animation:orbitFloat 6s ease-in-out infinite}
+.orbit-one{width:min(78vw,680px);height:min(78vw,680px);left:-18%;top:-28%}
+.orbit-two{width:min(58vw,520px);height:min(58vw,520px);right:-12%;bottom:-22%;animation-delay:-2s}
+.transition-card{position:relative;width:min(100%,490px);padding:42px 42px 28px;border:1px solid #ffffff35;border-radius:22px;background:linear-gradient(145deg,#ffffff1c,#ffffff0b);box-shadow:0 28px 90px #06183f66;backdrop-filter:blur(16px);text-align:center;animation:cardEnter .5s cubic-bezier(.2,.75,.25,1) both}
+.transition-topline{display:flex;align-items:center;justify-content:center;gap:9px;color:#dce7ff;font-size:9px;letter-spacing:2.2px;font-weight:800}
+.transition-dot{width:7px;height:7px;border-radius:50%;background:#ffda45;box-shadow:0 0 14px #ffda45}
+.transition-brand{font-size:65px;line-height:1.1;font-weight:900;letter-spacing:-6px;margin:28px 0 20px;animation:brandGlow 2.4s ease-in-out infinite}
+.transition-brand span{color:#ffda45}
+.transition-divider{height:1px;background:linear-gradient(90deg,transparent,#ffffff66,transparent);margin:0 0 22px}
+.transition-role{display:inline-block;padding:7px 12px;border:1px solid #ffffff40;border-radius:30px;color:#ffdf70;font-size:9px;letter-spacing:1.8px;font-weight:800}
+.transition-card h2{font-size:clamp(22px,4vw,30px);line-height:1.2;margin:17px 0 9px;letter-spacing:-.6px}
+.transition-card p{font-size:13px;line-height:1.6;color:#dce6ff;margin:0}
+.transition-progress{height:4px;border-radius:8px;background:#ffffff30;margin:29px 0 22px;overflow:hidden}
+.transition-progress span{display:block;width:0;height:100%;border-radius:8px;background:#ffda45;box-shadow:0 0 15px #ffda45;animation:progressLoad 1.55s cubic-bezier(.2,.75,.25,1) forwards}
+.transition-foot{display:flex;justify-content:space-between;color:#d1def9a8;font-size:8px;letter-spacing:1.6px;font-weight:700}
+.dashboard-enter{animation:pageReveal .72s cubic-bezier(.2,.75,.25,1) both}
+@media(max-width:480px){.transition-card{padding:34px 24px 24px}.transition-brand{font-size:56px}.transition-card h2{font-size:23px}}
+@media(prefers-reduced-motion:reduce){.auth-card,.dashboard-enter,.transition-card,.transition-orbit,.transition-brand,.transition-progress span{animation:none!important}.ruma-transition,.auth-gate.auth-leaving .auth-card{transition:none!important}}
 </style>
 </head>
 <body class="auth-mode">
@@ -574,6 +587,9 @@ function rumaDownloadSalesCSV(){
   const layer=$('rumaTransition');
   $('transitionTitle').textContent=title;
   $('transitionSubtitle').textContent=subtitle;
+  $('transitionRole').textContent=title.includes('Admin')?'ADMINISTRATOR ACCESS':'MEMBER AREA';
+  const progress=$('rumaTransition').querySelector('.transition-progress span');
+  if(progress){progress.style.animation='none';void progress.offsetWidth;progress.style.animation='progressLoad 1.55s cubic-bezier(.2,.75,.25,1) forwards'}
   authGate.classList.add('auth-leaving');
   layer.classList.remove('fade-out');
   layer.classList.add('active');
@@ -588,8 +604,8 @@ function rumaDownloadSalesCSV(){
     layer.setAttribute('aria-hidden','true');
     authGate.classList.remove('auth-leaving');
     if(visiblePage)visiblePage.classList.remove('dashboard-enter');
-   },320);
-  },620);
+   },430);
+  },1550);
  }
  function showVisitor(name){
   runEntryTransition('Selamat datang, '+name+'!','Membuka katalog dan dashboard RUMA…',()=>{
@@ -691,11 +707,17 @@ function rumaDownloadSalesCSV(){
 
 
 <div id="rumaTransition" class="ruma-transition" aria-live="polite" aria-hidden="true">
-  <div class="transition-content">
-    <div class="transition-mark">R<span>•</span></div>
-    <div class="transition-spinner"></div>
+  <div class="transition-orbit orbit-one"></div>
+  <div class="transition-orbit orbit-two"></div>
+  <div class="transition-card">
+    <div class="transition-topline"><span class="transition-dot"></span> RUMA DIGITAL EXPERIENCE</div>
+    <div class="transition-brand">RUMA<span>•</span></div>
+    <div class="transition-divider"></div>
+    <span class="transition-role" id="transitionRole">MEMBER AREA</span>
     <h2 id="transitionTitle">Selamat datang di RUMA</h2>
     <p id="transitionSubtitle">Menyiapkan dashboard Anda…</p>
+    <div class="transition-progress"><span></span></div>
+    <div class="transition-foot"><span>AMAN &amp; NYAMAN</span><span>RUMA · 2026</span></div>
   </div>
 </div>
 </body>
