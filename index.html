@@ -36,7 +36,7 @@
 
 
 <style id="rumaAuthStyles">
-body.auth-mode>.top,body.auth-mode>header,body.auth-mode>.footer{display:none!important}
+body.auth-mode>.top,body.auth-mode>header,body.auth-mode>.footer,body.auth-mode>main{display:none!important}
 body.auth-mode #authGate{display:grid!important}
 .auth-gate{min-height:100vh;display:grid;place-items:center;padding:35px 18px;background:linear-gradient(135deg,#f5f4ee,#edf1f7)}
 .auth-card{width:min(100%,480px);background:white;border:1px solid #e7e8e3;border-radius:18px;padding:34px;box-shadow:0 18px 60px #102d6412}
@@ -64,8 +64,28 @@ body.auth-mode #authGate{display:grid!important}
 @media(max-width:560px){.auth-card{padding:25px 20px}.admin-panel{padding:25px 5%}.admin-heading{align-items:flex-start;flex-direction:column}.admin-heading h1{font-size:28px}.admin-product-tools{grid-template-columns:1fr}.admin-tabs{gap:0}.admin-tab{padding:12px 10px;font-size:12px}}
 </style>
 
+
+<style id="rumaTransitionStyles">
+@keyframes loginCardIn{0%{opacity:0;transform:translateY(22px) scale(.97)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes pageReveal{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes spinnerTurn{to{transform:rotate(360deg)}}
+.auth-card{animation:loginCardIn .55s cubic-bezier(.2,.75,.25,1) both}
+.auth-gate.auth-leaving .auth-card{opacity:0;transform:translateY(-12px) scale(.98);transition:opacity .25s ease,transform .25s ease}
+.ruma-transition{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;background:linear-gradient(135deg,#123f9c,#092967);color:white;opacity:0;visibility:hidden;transition:opacity .28s ease,visibility .28s ease}
+.ruma-transition.active{opacity:1;visibility:visible}
+.ruma-transition.fade-out{opacity:0}
+.transition-content{text-align:center;padding:25px;transform:translateY(12px);transition:transform .4s ease}
+.ruma-transition.active .transition-content{transform:translateY(0)}
+.transition-mark{font-size:64px;line-height:1;font-weight:900;letter-spacing:-5px;margin-bottom:28px}
+.transition-mark span{color:#ffda45}
+.transition-spinner{width:34px;height:34px;border:3px solid #ffffff55;border-top-color:#ffda45;border-radius:50%;margin:0 auto 24px;animation:spinnerTurn .8s linear infinite}
+.transition-content h2{font-size:clamp(22px,4vw,32px);margin:0 0 10px;letter-spacing:-.5px}
+.transition-content p{font-size:13px;color:#dce6ff;margin:0}
+.dashboard-enter{animation:pageReveal .55s cubic-bezier(.2,.75,.25,1) both}
+@media(prefers-reduced-motion:reduce){.auth-card,.dashboard-enter,.transition-spinner{animation:none!important}.ruma-transition,.transition-content,.auth-gate.auth-leaving .auth-card{transition:none!important}}
+</style>
 </head>
-<body>
+<body class="auth-mode">
 <div class="top">Ruang nyaman, hidup lebih mudah. &nbsp; • &nbsp; Inspirasi kebutuhan sehari-hari, semuanya di sini.</div>
 <header><div class="nav"><a class="logo" href="#" aria-label="RUMA Beranda">RUMA<span>•</span></a><div class="search"><input id="search" type="search" placeholder="Apa yang rumahmu butuhkan?" aria-label="Cari produk"><b aria-hidden="true">⌕</b></div><button class="iconbtn" id="openCart">♧ &nbsp; Keranjang <span class="cartnum" id="count">0</span></button></div><nav class="links"><a href="#kategori">Semua kategori</a><a href="#produk">Produk pilihan</a><a href="#promo">Harga spesial</a><a href="#inspirasi">Inspirasi ruangan</a><a href="#login" id="openLoginNav">Login</a><span class="right">Dirancang untuk hidup sehari-hari ↗</span></nav></header>
 
@@ -550,18 +570,43 @@ function rumaDownloadSalesCSV(){
   $('signupMessage').textContent='Kode email sungguhan memerlukan backend/email service.';
   window.scrollTo(0,0);
  }
+ function runEntryTransition(title,subtitle,callback){
+  const layer=$('rumaTransition');
+  $('transitionTitle').textContent=title;
+  $('transitionSubtitle').textContent=subtitle;
+  authGate.classList.add('auth-leaving');
+  layer.classList.remove('fade-out');
+  layer.classList.add('active');
+  layer.setAttribute('aria-hidden','false');
+  window.setTimeout(()=>{
+   callback();
+   const visiblePage=role==='admin'?adminPanel:main;
+   if(visiblePage)visiblePage.classList.add('dashboard-enter');
+   layer.classList.add('fade-out');
+   window.setTimeout(()=>{
+    layer.classList.remove('active','fade-out');
+    layer.setAttribute('aria-hidden','true');
+    authGate.classList.remove('auth-leaving');
+    if(visiblePage)visiblePage.classList.remove('dashboard-enter');
+   },320);
+  },620);
+ }
  function showVisitor(name){
-  role='visitor';document.body.classList.remove('auth-mode');
-  authGate.hidden=true;adminPanel.hidden=true;main.hidden=false;visitorBar.hidden=false;
-  if(footer)footer.hidden=false;if(topBanner)topBanner.style.display='block';if(header)header.style.display='';
-  $('visitorWelcome').textContent='Halo, '+name+' · Mode Pengunjung';
-  window.scrollTo(0,0);
+  runEntryTransition('Selamat datang, '+name+'!','Membuka katalog dan dashboard RUMA…',()=>{
+   role='visitor';document.body.classList.remove('auth-mode');
+   authGate.hidden=true;adminPanel.hidden=true;main.hidden=false;visitorBar.hidden=false;
+   if(footer)footer.hidden=false;if(topBanner)topBanner.style.display='block';if(header)header.style.display='';
+   $('visitorWelcome').textContent='Halo, '+name+' · Mode Pengunjung';
+   window.scrollTo(0,0);
+  });
  }
  function showAdmin(){
-  role='admin';document.body.classList.remove('auth-mode');
-  authGate.hidden=true;main.hidden=true;visitorBar.hidden=true;adminPanel.hidden=false;
-  if(footer)footer.hidden=true;if(topBanner)topBanner.style.display='none';if(header)header.style.display='none';
-  showAdminProducts();renderAdminProducts();window.scrollTo(0,0);
+  runEntryTransition('Selamat datang, Admin!','Membuka panel administrasi RUMA…',()=>{
+   role='admin';document.body.classList.remove('auth-mode');
+   authGate.hidden=true;main.hidden=true;visitorBar.hidden=true;adminPanel.hidden=false;
+   if(footer)footer.hidden=true;if(topBanner)topBanner.style.display='none';if(header)header.style.display='none';
+   showAdminProducts();renderAdminProducts();window.scrollTo(0,0);
+  });
  }
  function showAdminProducts(){
   $('adminProductsPage').hidden=false;$('adminSalesPage').hidden=true;
@@ -644,5 +689,14 @@ function rumaDownloadSalesCSV(){
 })();
 </script>
 
+
+<div id="rumaTransition" class="ruma-transition" aria-live="polite" aria-hidden="true">
+  <div class="transition-content">
+    <div class="transition-mark">R<span>•</span></div>
+    <div class="transition-spinner"></div>
+    <h2 id="transitionTitle">Selamat datang di RUMA</h2>
+    <p id="transitionSubtitle">Menyiapkan dashboard Anda…</p>
+  </div>
+</div>
 </body>
 </html>
