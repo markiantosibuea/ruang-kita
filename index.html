@@ -150,7 +150,7 @@ let category='all',filter='all',query='',cart={},saved=new Set(),timer;const mon
 function toast(text){$('toast').textContent=text;$('toast').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('toast').classList.remove('show'),2800)}
 function renderCategories(){$('categories').innerHTML=cats.map(([name,pic])=>`<button class="category ${category===name?'active':''}" data-cat="${name}"><div class="photo"><img loading="lazy" src="${img(pic,350)}" alt="${name}"></div>${name}</button>`).join('');$('categories').querySelectorAll('button').forEach(b=>b.onclick=()=>chooseCategory(b.dataset.cat))}
 function chooseCategory(c){category=c;filter='all';query='';$('search').value='';render();$('produk').scrollIntoView({behavior:'smooth'})}
-function render(){renderCategories();document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter));let shown=items.filter(p=>(category==='all'||p.cat===category)&&(filter==='all'||filter==='popular'&&p.popular||filter==='sale'&&p.sale||filter==='saved'&&saved.has(p.id))&&`${p.name} ${p.desc} ${p.cat}`.toLowerCase().includes(query)&&p.price<=Number($('budget')?.value||Infinity));const sort=$('sort')?.value;if(sort==='low')shown.sort((a,b)=>a.price-b.price);if(sort==='high')shown.sort((a,b)=>b.price-a.price);if(sort==='name')shown.sort((a,b)=>a.name.localeCompare(b.name,'id'));$('results').textContent=`${shown.length} dari ${items.length} produk`;$('products').innerHTML=shown.length?shown.map((p,i)=>`<article class="product" style="animation-delay:${Math.min(i*.025,.2)}s"><div class="productpic"><img loading="lazy" src="${productImage(p)}" data-fallback-src="${img(p.img)}" alt="${p.name} — gambar katalog"><span class="badge ${p.sale?'yellow':''}">${p.tag}</span><button class="heart ${saved.has(p.id)?'on':''}" data-save="${p.id}" aria-label="Favorit ${p.name}" aria-pressed="${saved.has(p.id)}">${saved.has(p.id)?'♥':'♡'}</button></div><small class="illustration">${p.cat} · ${photoCredit(p)}</small><h3>${p.name}</h3><p>${p.desc}</p><div class="price">${money(p.price)}</div><button class="buy-now" data-buy="${p.id}">Beli sekarang →</button><button class="add" data-add="${p.id}" aria-label="Tambahkan ${p.name} ke keranjang">+ Tambah ke keranjang</button><button class="details-button" data-buy="${p.id}">Lihat detail produk</button></article>`).join(''):'<div class="empty">Belum ada produk yang cocok. Ubah kategori, kata kunci, atau batas harga.</div>';$('products').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const id=+b.dataset.add;cart[id]=(cart[id]||0)+1;renderCart();toast(items.find(p=>p.id===id).name+' ditambahkan ke keranjang')});$('products').querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>{const id=+b.dataset.save;saved.has(id)?saved.delete(id):saved.add(id);render()});$('products').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>showPurchase(+b.dataset.buy));}
+function render(){renderCategories();document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter));let shown=items.filter(p=>(category==='all'||p.cat===category)&&(filter==='all'||filter==='popular'&&p.popular||filter==='sale'&&p.sale||filter==='saved'&&saved.has(p.id))&&`${p.name} ${p.desc} ${p.cat}`.toLowerCase().includes(query)&&p.price<=Number($('budget')?.value||Infinity));const sort=$('sort')?.value;if(sort==='low')shown.sort((a,b)=>a.price-b.price);if(sort==='high')shown.sort((a,b)=>b.price-a.price);if(sort==='name')shown.sort((a,b)=>a.name.localeCompare(b.name,'id'));$('results').textContent=`${shown.length} dari ${items.length} produk`;$('products').innerHTML=shown.length?shown.map((p,i)=>`<article class="product" style="animation-delay:${Math.min(i*.025,.2)}s"><div class="productpic"><img loading="lazy" src="${productImage(p)}" data-fallback-src="${img(p.img)}" alt="${p.name} — gambar katalog"><span class="badge ${p.sale?'yellow':''}">${p.tag}</span><button class="heart ${saved.has(p.id)?'on':''}" data-save="${p.id}" aria-label="Favorit ${p.name}" aria-pressed="${saved.has(p.id)}">${saved.has(p.id)?'♥':'♡'}</button></div><small class="illustration">${p.cat} · ${photoCredit(p)}</small><h3>${p.name}</h3><p>${p.desc}</p><div class="price">${money(p.price)}</div><button class="buy-now" data-buy="${p.id}">Beli sekarang →</button><button class="add" data-add="${p.id}" aria-label="Tambahkan ${p.name} ke keranjang">+ Tambah ke keranjang</button><button class="details-button" data-detail="${p.id}">Lihat detail produk →</button></article>`).join(''):'<div class="empty">Belum ada produk yang cocok. Ubah kategori, kata kunci, atau batas harga.</div>';$('products').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const id=+b.dataset.add;cart[id]=(cart[id]||0)+1;renderCart();toast(items.find(p=>p.id===id).name+' ditambahkan ke keranjang')});$('products').querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>{const id=+b.dataset.save;saved.has(id)?saved.delete(id):saved.add(id);render()});$('products').querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>showPurchase(+b.dataset.buy));$('products').querySelectorAll('[data-detail]').forEach(b=>b.onclick=()=>showProductDetail(+b.dataset.detail));}
 function renderCart(){const list=items.filter(p=>cart[p.id]);$('count').textContent=Object.values(cart).reduce((a,b)=>a+b,0);$('total').textContent=money(list.reduce((s,p)=>s+p.price*cart[p.id],0));$('cartitems').innerHTML=list.length?list.map(p=>`<div class="cartitem"><img src="${productImage(p,180)}" data-fallback-src="${img(p.img,180)}" alt="${p.name}"><div><h4>${p.name}</h4><p>${money(p.price)}</p><div class="qty"><button data-id="${p.id}" data-delta="-1" aria-label="Kurangi ${p.name}">−</button><span>${cart[p.id]}</span><button data-id="${p.id}" data-delta="1" aria-label="Tambah ${p.name}">+</button></div></div></div>`).join(''):'<p class="note">Keranjang masih kosong. Temukan sesuatu yang kamu suka, lalu tekan tombol +.</p>';$('cartitems').querySelectorAll('button').forEach(b=>b.onclick=()=>{let id=+b.dataset.id;cart[id]+=+b.dataset.delta;if(cart[id]<=0)delete cart[id];renderCart()});$('checkout').disabled=!list.length;$('checkout').style.opacity=list.length?'1':'.5'}
 function openCart(){$('overlay').classList.add('open');document.body.style.overflow='hidden';$('closeCart').focus()}function closeCart(){$('overlay').classList.remove('open');document.body.style.overflow='';$('openCart').focus()}
 $('openCart').onclick=openCart;$('closeCart').onclick=closeCart;$('overlay').onclick=e=>{if(e.target===$('overlay'))closeCart()};document.addEventListener('keydown',e=>{if(!$('overlay').classList.contains('open'))return;if(e.key==='Escape')closeCart();if(e.key==='Tab'){const f=[...$('overlay').querySelectorAll('button:not(:disabled)')];const first=f[0],last=f[f.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}});
@@ -172,7 +172,103 @@ const finishPage=document.createElement('div');finishPage.id='finishPage';finish
 let orderItems=[],buyer=null,orderComplete=false,receipt='';const subtotalOrder=()=>orderItems.reduce((s,r)=>s+items.find(p=>p.id===r.id).price*r.qty,0);const orderFee=()=>Number($('orderShipping').value);
 function refreshOrder(){$('orderLines').innerHTML=orderItems.map(r=>{const p=items.find(x=>x.id===r.id);return `<div class="summary-row"><img src="${productImage(p,180)}" data-fallback-src="${img(p.img,180)}" alt="${p.name}"><div><strong>${p.name}</strong><small>${r.qty} × ${money(p.price)}</small></div><strong>${money(p.price*r.qty)}</strong></div>`}).join('');$('orderSubtotal').textContent=money(subtotalOrder());$('orderFee').textContent=money(orderFee());$('orderGrand').textContent=money(subtotalOrder()+orderFee())}
 function startOrder(rows){if(!rows.length)return;orderItems=rows;buyer=null;orderComplete=false;closeCart();if(purchase.open)purchase.close();refreshOrder();location.hash='pembelian';routeTransactions()}
-function routeTransactions(){let stage=location.hash.slice(1);if(['pembelian','pembayaran','selesai'].includes(stage)&&!orderItems.length){location.hash='produk';return}if(stage==='pembayaran'&&!buyer){location.hash='pembelian';return}if(stage==='selesai'&&!orderComplete){location.hash=buyer?'pembayaran':'pembelian';return}const active=['pembelian','pembayaran','selesai'].includes(stage);document.querySelector('main').hidden=active;document.querySelector('.footer').hidden=active;orderPage.hidden=stage!=='pembelian';payPage.hidden=stage!=='pembayaran';finishPage.hidden=stage!=='selesai';if(active){window.scrollTo(0,0);if(stage==='pembelian')refreshOrder()}}
+
+// Halaman detail produk mandiri.
+const productDetailPage=document.createElement('section');
+productDetailPage.id='productDetailPage';
+productDetailPage.className='product-detail-page';
+productDetailPage.hidden=true;
+productDetailPage.innerHTML='<div id="productDetailContent"></div>';
+document.querySelector('main').after(productDetailPage);
+
+const detailCss=document.createElement('style');
+detailCss.textContent=`
+.product-detail-page{max-width:1450px;margin:25px auto 65px;padding:0 6%;animation:rise .3s ease}
+.product-detail-page[hidden]{display:none}
+.detail-back{border:0;background:none;padding:12px 0 22px;color:var(--blue);font-weight:700;font-size:13px}
+.detail-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:42px;align-items:start}
+.detail-photo{background:#f4f4ef;border-radius:12px;overflow:hidden}
+.detail-photo img{display:block;width:100%;height:100%;min-height:420px;max-height:650px;object-fit:cover}
+.detail-info{padding:12px 0}
+.detail-category{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700}
+.detail-info h1{font-size:clamp(30px,4vw,48px);line-height:1.12;letter-spacing:-1.5px;margin:15px 0}
+.detail-price{font-size:28px;font-weight:800;margin:18px 0}
+.detail-description{font-size:15px;line-height:1.9;color:#59635d}
+.detail-tag{display:inline-block;padding:7px 11px;background:#f3f3ed;border-radius:20px;font-size:11px;font-weight:700;margin:5px 0 15px}
+.detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:28px 0 18px}
+.detail-actions button{border-radius:28px;padding:15px 12px;font-size:13px;font-weight:700}
+.detail-add{border:1px solid var(--blue);background:white;color:var(--blue)}
+.detail-buy{border:1px solid var(--blue);background:var(--blue);color:white}
+.detail-meta{border-top:1px solid #e7e8e3;margin-top:25px;padding-top:18px;font-size:12px;line-height:1.8;color:var(--muted)}
+.detail-photo-credit{font-size:11px;color:var(--muted);padding:12px 2px}
+.detail-photo-credit a{color:var(--blue);text-decoration:underline}
+@media(max-width:760px){.product-detail-page{padding:0 5%;margin-top:12px}.detail-layout{grid-template-columns:1fr;gap:18px}.detail-photo img{min-height:280px;max-height:420px}.detail-info{padding:0}.detail-info h1{font-size:34px}}
+@media(max-width:420px){.detail-actions{grid-template-columns:1fr}.detail-photo img{min-height:235px}}
+`;
+document.head.append(detailCss);
+
+function showProductDetail(id){
+  const p=items.find(x=>x.id===id);
+  if(!p)return;
+  $('productDetailContent').innerHTML=`
+    <button class="detail-back" id="detailBack">← Kembali ke katalog</button>
+    <div class="detail-layout">
+      <div>
+        <div class="detail-photo"><img src="${productImage(p,1000)}" data-fallback-src="${img(p.img,1000)}" alt="${p.name}"></div>
+        <div class="detail-photo-credit">${photoCredit(p)}. ${p.photoSource?'Foto referensi produk.':'Foto ilustrasi kategori, bukan foto SKU persis.'}</div>
+      </div>
+      <div class="detail-info">
+        <div class="detail-category">${p.cat} · RUMA</div>
+        <h1>${p.name}</h1>
+        <span class="detail-tag">${p.tag||'Koleksi RUMA'}</span>
+        <div class="detail-price">${money(p.price)}</div>
+        <p class="detail-description">${p.desc}</p>
+        <div class="detail-actions">
+          <button class="detail-add" id="detailAddCart">＋ Tambahkan ke keranjang</button>
+          <button class="detail-buy" id="detailBuyNow">Beli sekarang →</button>
+        </div>
+        <div class="detail-meta"><strong>Informasi produk</strong><br>
+          Kode produk: RUMA-${String(p.id).padStart(3,'0')}<br>
+          Kategori: ${p.cat}<br>Harga katalog: ${money(p.price)}<br><br>
+          Katalog ini merupakan demo. Pastikan spesifikasi, ketersediaan, dan harga akhir dikonfirmasi kepada penjual sebelum transaksi nyata.
+        </div>
+      </div>
+    </div>`;
+  $('detailBack').onclick=()=>{location.hash='produk'};
+  $('detailAddCart').onclick=()=>{
+    cart[id]=(cart[id]||0)+1;
+    renderCart();
+    toast(p.name+' ditambahkan ke keranjang');
+  };
+  $('detailBuyNow').onclick=()=>startOrder([{id:p.id,qty:1}]);
+  if(location.hash!==`#detail-${id}`)location.hash=`detail-${id}`;
+  routeTransactions();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function routeTransactions(){
+let stage=location.hash.slice(1);
+if(['pembelian','pembayaran','selesai'].includes(stage)&&!orderItems.length){location.hash='produk';return}
+if(stage==='pembayaran'&&!buyer){location.hash='pembelian';return}
+if(stage==='selesai'&&!orderComplete){location.hash=buyer?'pembayaran':'pembelian';return}
+const match=stage.match(/^detail-(\d+)$/);
+const detailProduct=match?items.find(p=>p.id===Number(match[1])):null;
+if(match&&!detailProduct){location.hash='produk';return}
+const active=['pembelian','pembayaran','selesai'].includes(stage);
+const detailActive=!!detailProduct;
+document.querySelector('main').hidden=active||detailActive;
+document.querySelector('.footer').hidden=active;
+productDetailPage.hidden=!detailActive;
+orderPage.hidden=stage!=='pembelian';
+payPage.hidden=stage!=='pembayaran';
+finishPage.hidden=stage!=='selesai';
+if(detailActive){
+  const current=$('productDetailContent').querySelector('h1')?.textContent;
+  if(current!==detailProduct.name)showProductDetail(detailProduct.id);
+  window.scrollTo(0,0);
+}
+if(active){window.scrollTo(0,0);if(stage==='pembelian')refreshOrder()}
+}
 $('orderShipping').onchange=refreshOrder;$('backShop').onclick=()=>location.hash='produk';$('backOrder').onclick=()=>location.hash='pembelian';$('finishBack').onclick=()=>location.hash='produk';$('addressForm').onsubmit=e=>{e.preventDefault();buyer=Object.fromEntries(new FormData(e.target));$('paymentLines').innerHTML=$('orderLines').innerHTML;$('paymentSubtotal').textContent=money(subtotalOrder());$('paymentShipping').textContent=money(orderFee());$('paymentAmount').textContent=money(subtotalOrder()+orderFee());$('deliverySummary').textContent='Penerima: '+buyer.recipient+' · '+buyer.city+', '+buyer.province+' · '+$('orderShipping').selectedOptions[0].text;location.hash='pembayaran'};
 function explainPayment(){const method=document.querySelector('[name="method"]:checked').value;$('methodExplanation').textContent=method==='QRIS'?'QRIS belum terhubung. Kode QR pembayaran asli tidak dibuat dalam demo ini.':method==='Virtual account'?'Virtual account belum terhubung. Tidak ada nomor rekening pembayaran yang diterbitkan.':'Dompet digital belum terhubung. Tidak ada pengalihan ke aplikasi atau permintaan otorisasi.'}document.querySelectorAll('[name="method"]').forEach(r=>r.onchange=explainPayment);explainPayment();
 $('paymentForm').onsubmit=e=>{e.preventDefault();if(!buyer||!orderItems.length)return;const method=document.querySelector('[name="method"]:checked').value;const reference='DEMO-'+Date.now().toString(36).toUpperCase();receipt=['RUMA — RINGKASAN SIMULASI',reference,'Status: belum dibayar, belum dikirim','Metode pilihan: '+method,...orderItems.map(r=>{const p=items.find(x=>x.id===r.id);return p.name+' × '+r.qty+' — '+money(p.price*r.qty)}),'Subtotal: '+money(subtotalOrder()),'Ongkir estimasi: '+money(orderFee()),'Total perkiraan: '+money(subtotalOrder()+orderFee()),'Dokumen ini bukan bukti pembayaran.'].join('\n');$('demoReceipt').textContent=reference+' · '+method+' · '+money(subtotalOrder()+orderFee())+' — BELUM DIBAYAR';orderComplete=true;location.hash='selesai'};
@@ -180,7 +276,7 @@ $('downloadReceipt').onclick=()=>{const url=URL.createObjectURL(new Blob([receip
 $('checkout').textContent='Lanjut ke pembelian →';$('checkout').onclick=()=>startOrder(items.filter(p=>cart[p.id]).map(p=>({id:p.id,qty:cart[p.id]})));document.querySelector('.cartitems').nextElementSibling.nextElementSibling.nextElementSibling.textContent='Lanjutkan ke halaman alamat dan pembayaran simulasi. Tidak ada uang yang ditarik.';
 $('purchaseDownload').textContent='Lanjut ke pembelian →';$('purchaseDownload').onclick=()=>{const n=Number($('purchaseQty').value);if(Number.isInteger(n)&&n>=1&&n<=99){$('orderShipping').value=$('shipping').value;startOrder([{id:window.purchaseProduct.id,qty:n}])}};
 help.querySelector('details p').textContent='Tekan Beli sekarang atau tambahkan produk ke keranjang. Lanjutkan ke checkout, isi alamat contoh, pilih pengiriman dan metode pembayaran, lalu selesaikan simulasi. Pesanan tidak dikirim ke penjual dan tidak ada uang yang ditarik.';
-const credits=document.createElement('p');credits.className='note';credits.innerHTML='Foto referensi yang digunakan ditautkan ke halaman sumber masing-masing: <a href="https://ishinomaki-lab.org/products/105-lounge-chair-maker-pack" target="_blank" rel="noopener noreferrer">Ishinomaki Lab</a>, <a href="https://www.kmart.com.au/product/hazel-table-lamp-43476091/" target="_blank" rel="noopener noreferrer">Kmart</a>, <a href="https://www.amorarcdinnerplates.com/" target="_blank" rel="noopener noreferrer">AmorArc</a>, <a href="https://www.bedeckhome.com/" target="_blank" rel="noopener noreferrer">Bedeck Home</a>, <a href="https://www.walmart.com/" target="_blank" rel="noopener noreferrer">Walmart</a>, <a href="https://mosia.io/sunglow/" target="_blank" rel="noopener noreferrer">SunGlow</a>, <a href="https://www.davisfresh.com/" target="_blank" rel="noopener noreferrer">Davis Fresh</a>, dan <a href="https://store.shopping.yahoo.co.jp/satonana/wk045.html" target="_blank" rel="noopener noreferrer">Yahoo! Shopping</a>, <a href="https://rachaelray.com/products/cook-and-create-hard-anodized-nonstick-frying-pan" target="_blank" rel="noopener noreferrer">Rachael Ray</a>, dan <a href="https://www.pradel-excellence.fr/poeles-inox/732-lumia-casserole-20-cm-inox-manche-fixe-boite-couleur.html" target="_blank" rel="noopener noreferrer">Pradel Excellence</a>. Produk lainnya memakai foto kategori dari <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer">Unsplash</a>. Pastikan izin penggunaan gambar sesuai kebutuhan sebelum situs dipakai secara komersial. Semua gambar eksternal memerlukan internet.';help.append(credits);window.addEventListener('hashchange',routeTransactions);routeTransactions();
+const credits=document.createElement('p');credits.className='note';credits.innerHTML='Foto referensi yang digunakan ditautkan ke halaman sumber masing-masing: <a href="https://ishinomaki-lab.org/products/105-lounge-chair-maker-pack" target="_blank" rel="noopener noreferrer">Ishinomaki Lab</a>, <a href="https://www.kmart.com.au/product/hazel-table-lamp-43476091/" target="_blank" rel="noopener noreferrer">Kmart</a>, <a href="https://www.amorarcdinnerplates.com/" target="_blank" rel="noopener noreferrer">AmorArc</a>, <a href="https://www.bedeckhome.com/" target="_blank" rel="noopener noreferrer">Bedeck Home</a>, <a href="https://www.walmart.com/" target="_blank" rel="noopener noreferrer">Walmart</a>, <a href="https://mosia.io/sunglow/" target="_blank" rel="noopener noreferrer">SunGlow</a>, <a href="https://www.davisfresh.com/" target="_blank" rel="noopener noreferrer">Davis Fresh</a>, dan <a href="https://store.shopping.yahoo.co.jp/satonana/wk045.html" target="_blank" rel="noopener noreferrer">Yahoo! Shopping</a>, <a href="https://rachaelray.com/products/cook-and-create-hard-anodized-nonstick-frying-pan" target="_blank" rel="noopener noreferrer">Rachael Ray</a>, dan <a href="https://www.pradel-excellence.fr/poeles-inox/732-lumia-casserole-20-cm-inox-manche-fixe-boite-couleur.html" target="_blank" rel="noopener noreferrer">Pradel Excellence</a>. Produk lainnya memakai foto kategori dari <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer">Unsplash</a>. Pastikan izin penggunaan gambar sesuai kebutuhan sebelum situs dipakai secara komersial. Semua gambar eksternal memerlukan internet.';help.append(credits);window.addEventListener('hashchange',()=>{routeTransactions();const m=location.hash.match(/^#detail-(\d+)$/);if(m&&$('productDetailContent').innerHTML.trim()==='')showProductDetail(Number(m[1]))});routeTransactions();if(/^#detail-\d+$/.test(location.hash))showProductDetail(Number(location.hash.slice(8)));
 </script>
 </body>
 </html>
